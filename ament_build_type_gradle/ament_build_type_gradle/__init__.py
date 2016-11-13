@@ -20,8 +20,16 @@ import shutil
 
 from ament_tools.helper import extract_argument_group
 
+from ament_package.templates import configure_file
+from ament_package.templates import get_environment_hook_template_path
+from ament_package.templates import get_package_level_template_names
+
+from ament_tools.build_types.common import expand_package_level_setup_files
 from ament_tools.build_type import BuildAction
 from ament_tools.build_type import BuildType
+from ament_tools.helper import deploy_file
+
+import pkg_resources
 
 IS_WINDOWS = os.name == 'nt'
 
@@ -79,6 +87,39 @@ class AmentGradleBuildType(BuildType):
         cmd += ['assemble']
 
         yield BuildAction(cmd, cwd=context.source_space)
+        
+        environment_hooks_path = os.path.join(
+            'share', context.package_manifest.name, 'environment')
+
+        ext = '.sh' if not IS_WINDOWS else '.bat'
+        path_environment_hook = os.path.join(
+            environment_hooks_path, 'path' + ext)
+        
+        # expand environment hook for JAVAPATH
+        ext = '.sh.in' if not IS_WINDOWS else '.bat.in'
+        template_path = self.get_environment_hook_template_path('javapath' + ext)
+        
+        content = configure_file(template_path, {
+            'JAVA_SHARE_DIR': os.path.join('share', context.package_manifest.name, 'java', '*'),
+            'JAVA_LIB_DIR': os.path.join('lib', 'java', '*'),
+        })
+        javapath_environment_hook = os.path.join(
+            environment_hooks_path, os.path.basename(template_path)[:-3])
+        destination_path = os.path.join(
+            context.build_space, javapath_environment_hook)
+        destination_dir = os.path.dirname(destination_path)
+        if not os.path.exists(destination_dir):
+            os.makedirs(destination_dir)
+        with open(destination_path, 'w') as h:
+            h.write(content)
+
+        environment_hooks = [
+            path_environment_hook,
+            javapath_environment_hook,
+        ]
+
+        # expand package-level setup files
+        expand_package_level_setup_files(context, environment_hooks, environment_hooks_path)
 
     def on_test(self, context):
         cmd_args = [
@@ -96,6 +137,40 @@ class AmentGradleBuildType(BuildType):
         yield BuildAction(cmd, cwd=context.source_space)
 
     def on_install(self, context):
+        # deploy PATH environment hook
+        ext = '.sh' if not IS_WINDOWS else '.bat'
+        template_path = get_environment_hook_template_path('path' + ext)
+        deploy_file(
+            context, os.path.dirname(template_path), os.path.basename(template_path),
+            dst_subfolder=os.path.join('share', context.package_manifest.name, 'environment'))
+
+        # deploy JAVAPATH environment hook
+        destination_file = 'javapath' + ('.sh' if not IS_WINDOWS else '.bat')
+        deploy_file(
+            context, context.build_space,
+            os.path.join(
+                'share', context.package_manifest.name, 'environment',
+                destination_file))
+                
+        # create marker file
+        marker_file = os.path.join(
+            context.install_space,
+            'share', 'ament_index', 'resource_index', 'packages',
+            context.package_manifest.name)
+        if not os.path.exists(marker_file):
+            marker_dir = os.path.dirname(marker_file)
+            if not os.path.exists(marker_dir):
+                os.makedirs(marker_dir)
+            with open(marker_file, 'w'):  # "touching" the file
+                pass
+                
+        for name in get_package_level_template_names():
+            assert name.endswith('.in')
+            deploy_file(
+                context, context.build_space,
+                os.path.join(
+                    'share', context.package_manifest.name, name[:-3]))
+
         cmd_args = [
             '-Pament.build_space=' + context.build_space,
             '-Pament.install_space=' + context.install_space,
@@ -107,7 +182,7 @@ class AmentGradleBuildType(BuildType):
 
         cmd = [GRADLE_EXECUTABLE]
         cmd += cmd_args
-        cmd += ['assemble']
+        cmd += ['amentInstall']
 
         yield BuildAction(cmd, cwd=context.source_space)
 
@@ -126,3 +201,7 @@ class AmentGradleBuildType(BuildType):
         cmd += ['clean']
 
         yield BuildAction(cmd, cwd=context.source_space)
+
+    #TODO template need to be moved in 'ament_package' package
+    def get_environment_hook_template_path(self, name):
+	    return pkg_resources.resource_filename('ament_build_type_gradle', 'template/environment_hook/' + name)
