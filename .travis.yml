@@ -9,7 +9,7 @@ before_install:
 - docker pull theosakamg7/ros2java:latest
 - cd /home/travis/build
 - pwd
-- find . -type d -path ./.git -prune -o
+- find . -type d -not \( -path "./.git" -prune \)
 - mkdir -p ament_ws/src
 - cd /home/travis/build/ament_ws
 - docker run -u "$UID" -it --rm -v `pwd`:`pwd` -w `pwd` theosakamg7/ros2java:latest sh -c "/usr/bin/wget https://gist.githubusercontent.com/Theosakamg/e6084cfafa6b7ea690104424cef970a2/raw/ament_java.repos"
