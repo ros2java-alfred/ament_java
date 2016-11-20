@@ -98,10 +98,10 @@ class AmentGradleBuildType(BuildType):
         # expand environment hook for JAVAPATH
         ext = '.sh.in' if not IS_WINDOWS else '.bat.in'
         template_path = self.get_environment_hook_template_path('javapath' + ext)
-
+        javapath = os.path.join('$AMENT_CURRENT_PREFIX', 'share', context.package_manifest.name, 'java', '*') + ';' \
+            + os.path.join('$AMENT_CURRENT_PREFIX', 'lib', 'java', '*')
         content = configure_file(template_path, {
-            'JAVA_SHARE_DIR': os.path.join('share', context.package_manifest.name, 'java', '*'),
-            'JAVA_LIB_DIR': os.path.join('lib', 'java', '*'),
+            'JAVAPATH': javapath
         })
         javapath_environment_hook = os.path.join(
             environment_hooks_path, os.path.basename(template_path)[:-3])
@@ -185,6 +185,38 @@ class AmentGradleBuildType(BuildType):
         cmd += ['assemble']
 
         yield BuildAction(cmd, cwd=context.source_space)
+        
+        #Deploy libs dependencies
+        filesDir = os.path.join(context.build_space, 'lib', 'java')
+        if os.path.exists(filesDir):
+            for filename in os.listdir(filesDir):
+                deploy_file(
+                context, context.build_space,
+                os.path.join(
+                    'lib', 'java',
+                    os.path.basename(filename)))
+                
+        #Deploy jars
+        filesDir = os.path.join(context.build_space, 'share', context.package_manifest.name, 'java')
+        if os.path.exists(filesDir):
+            for filename in os.listdir(filesDir):
+                deploy_file(
+                context, context.build_space,
+                os.path.join(
+                    'share',
+                    context.package_manifest.name,
+                    'java',
+                    os.path.basename(filename)))
+                
+        #Deploy scripts
+        filesDir = os.path.join(context.build_space, 'bin')
+        if os.path.exists(filesDir):
+            for filename in os.listdir(filesDir):
+                deploy_file(
+                context, context.build_space,
+                os.path.join(
+                    'bin',
+                    os.path.basename(filename)))
 
     def on_uninstall(self, context):
         cmd_args = [
@@ -202,6 +234,5 @@ class AmentGradleBuildType(BuildType):
 
         yield BuildAction(cmd, cwd=context.source_space)
 
-    #TODO template need to be moved in 'ament_package' package
     def get_environment_hook_template_path(self, name):
-        return pkg_resources.resource_filename('ament_build_type_gradle', 'template/environment_hook/' + name)
+	    return pkg_resources.resource_filename('ament_build_type_gradle', 'template/environment_hook/' + name)
