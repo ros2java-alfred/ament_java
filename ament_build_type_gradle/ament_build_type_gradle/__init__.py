@@ -87,18 +87,18 @@ class AmentGradleBuildType(BuildType):
         cmd += ['assemble']
 
         yield BuildAction(cmd, cwd=context.source_space)
-        
+
         environment_hooks_path = os.path.join(
             'share', context.package_manifest.name, 'environment')
 
         ext = '.sh' if not IS_WINDOWS else '.bat'
         path_environment_hook = os.path.join(
             environment_hooks_path, 'path' + ext)
-        
+
         # expand environment hook for JAVAPATH
         ext = '.sh.in' if not IS_WINDOWS else '.bat.in'
         template_path = self.get_environment_hook_template_path('javapath' + ext)
-        
+
         content = configure_file(template_path, {
             'JAVA_SHARE_DIR': os.path.join('share', context.package_manifest.name, 'java', '*'),
             'JAVA_LIB_DIR': os.path.join('lib', 'java', '*'),
@@ -151,7 +151,7 @@ class AmentGradleBuildType(BuildType):
             os.path.join(
                 'share', context.package_manifest.name, 'environment',
                 destination_file))
-                
+
         # create marker file
         marker_file = os.path.join(
             context.install_space,
@@ -163,7 +163,7 @@ class AmentGradleBuildType(BuildType):
                 os.makedirs(marker_dir)
             with open(marker_file, 'w'):  # "touching" the file
                 pass
-                
+
         for name in get_package_level_template_names():
             assert name.endswith('.in')
             deploy_file(
@@ -182,7 +182,7 @@ class AmentGradleBuildType(BuildType):
 
         cmd = [GRADLE_EXECUTABLE]
         cmd += cmd_args
-        cmd += ['build']
+        cmd += ['assemble']
 
         yield BuildAction(cmd, cwd=context.source_space)
 
@@ -204,4 +204,4 @@ class AmentGradleBuildType(BuildType):
 
     #TODO template need to be moved in 'ament_package' package
     def get_environment_hook_template_path(self, name):
-	    return pkg_resources.resource_filename('ament_build_type_gradle', 'template/environment_hook/' + name)
+        return pkg_resources.resource_filename('ament_build_type_gradle', 'template/environment_hook/' + name)
