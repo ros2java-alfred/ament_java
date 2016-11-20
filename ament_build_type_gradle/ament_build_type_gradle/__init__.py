@@ -182,7 +182,7 @@ class AmentGradleBuildType(BuildType):
 
         cmd = [GRADLE_EXECUTABLE]
         cmd += cmd_args
-        cmd += ['amentInstall']
+        cmd += ['build']
 
         yield BuildAction(cmd, cwd=context.source_space)
 
