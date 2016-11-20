@@ -19,9 +19,7 @@ before_install:
 - cd /home/travis/build/ros2_java_ws/src/ros2/rosidl_typesupport
 - patch -p1 < ../../ros2_java/ros2_java/rosidl_ros2_java.diff
 - cd /home/travis/build
-- touch /home/travis/build/ros2_java_ws/src/ros2/launch/AMENT_IGNORE && \
-  touch /home/travis/build/ros2_java_ws/src/ros2/rosidl/python_cmake_module/AMENT_IGNORE && \
-  touch /home/travis/build/ros2_java_ws/src/ros2/rosidl/rosidl_generator_py/AMENT_IGNORE
+- touch /home/travis/build/ros2_java_ws/src/ros2/rosidl/python_cmake_module/AMENT_IGNORE && touch /home/travis/build/ros2_java_ws/src/ros2/rosidl/rosidl_generator_py/AMENT_IGNORE
 - docker run -u "$UID" -it --rm -v `pwd`:`pwd` -w `pwd` theosakamg7/ros2java:latest sh -c ". ament_ws/install_isolated/local_setup.sh && cd /home/travis/build/ros2_java_ws && ament build --symlink-install --isolated"
 
 script:
