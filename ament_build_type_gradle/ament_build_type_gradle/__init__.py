@@ -196,17 +196,8 @@ class AmentGradleBuildType(BuildType):
                     'lib', 'java',
                     os.path.basename(filename)))
                 
-        #Deploy jars
-        filesDir = os.path.join(context.build_space, 'share', context.package_manifest.name, 'java')
-        if os.path.exists(filesDir):
-            for filename in os.listdir(filesDir):
-                deploy_file(
-                context, context.build_space,
-                os.path.join(
-                    'share',
-                    context.package_manifest.name,
-                    'java',
-                    os.path.basename(filename)))
+        #Deploy share files
+        self.deploy_files(context, os.path.join('share', context.package_manifest.name, 'java'))
                 
         #Deploy scripts
         filesDir = os.path.join(context.build_space, 'bin')
@@ -233,6 +224,19 @@ class AmentGradleBuildType(BuildType):
         cmd += ['clean']
 
         yield BuildAction(cmd, cwd=context.source_space)
+        
+    def deploy_files(self, context, filesDir):
+        dir = os.path.join(context.build_space, filesDir)
+        
+        if os.path.exists(dir):
+            for filename in os.listdir(dir):
+                if not os.path.isdir(os.path.join(dir, os.path.basename(filename))):
+                    deploy_file(
+                        context,
+                        context.build_space,
+                        os.path.join(filesDir, os.path.basename(filename)))
+                else:
+                    self.deploy_files(context, os.path.join(filesDir, os.path.basename(filename)))
 
     def get_environment_hook_template_path(self, name):
 	    return pkg_resources.resource_filename('ament_build_type_gradle', 'template/environment_hook/' + name)
