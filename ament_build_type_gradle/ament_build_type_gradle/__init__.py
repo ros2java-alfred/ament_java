@@ -98,10 +98,11 @@ class AmentGradleBuildType(BuildType):
         # expand environment hook for JAVAPATH
         ext = '.sh.in' if not IS_WINDOWS else '.bat.in'
         template_path = self.get_environment_hook_template_path('javapath' + ext)
-        javapath = os.path.join('$AMENT_CURRENT_PREFIX', 'share', context.package_manifest.name, 'java', '*') + ':' \
-            + os.path.join('$AMENT_CURRENT_PREFIX', 'lib', 'java', '*')
+        javapath = os.path.join('$AMENT_CURRENT_PREFIX', 'share', context.package_manifest.name, 'java', '*')
+        javapath_depends = os.path.join('$AMENT_CURRENT_PREFIX', 'lib', 'java', '*')
         content = configure_file(template_path, {
-            'JAVAPATH': javapath
+            'JAVAPATH': javapath,
+            'JAVAPATH_DEPENDS': javapath_depends
         })
         javapath_environment_hook = os.path.join(
             environment_hooks_path, os.path.basename(template_path)[:-3])
