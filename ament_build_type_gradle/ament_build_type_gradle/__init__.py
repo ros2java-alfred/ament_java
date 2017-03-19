@@ -33,18 +33,21 @@ import pkg_resources
 
 IS_WINDOWS = os.name == 'nt'
 
-def get_gradle_executable():
-    gradle_script = 'gradle.bat' if IS_WINDOWS else 'gradle'
-    if 'GRADLE_HOME' in os.environ:
-        gradle_home = os.environ['GRADLE_HOME']
-        gradle_path = os.path.join(gradle_home, 'bin', gradle_script)
+def get_gradle_executable(context):
+    if os.path.isfile(os.path.join(context.source_space, 'gradlew')):
+        gradle_script = 'gradlew.bat' if IS_WINDOWS else 'gradlew'
+        gradle_path = os.path.join(context.source_space, gradle_script)
         if os.path.isfile(gradle_path):
             return gradle_path
+    else:
+        gradle_script = 'gradle.bat' if IS_WINDOWS else 'gradle'
+        if 'GRADLE_HOME' in os.environ:
+            gradle_home = os.environ['GRADLE_HOME']
+            gradle_path = os.path.join(gradle_home, 'bin', gradle_script)
+            if os.path.isfile(gradle_path):
+                return gradle_path
+    
     return shutil.which(gradle_script)
-
-
-GRADLE_EXECUTABLE = get_gradle_executable()
-
 
 class AmentGradleBuildType(BuildType):
     build_type = 'ament_gradle'
@@ -82,7 +85,7 @@ class AmentGradleBuildType(BuildType):
         ]
         cmd_args += context.ament_gradle_args
 
-        cmd = [GRADLE_EXECUTABLE]
+        cmd = [get_gradle_executable(context)]
         cmd += cmd_args
         cmd += ['assemble']
 
@@ -131,7 +134,7 @@ class AmentGradleBuildType(BuildType):
         ]
         cmd_args += context.ament_gradle_args
 
-        cmd = [GRADLE_EXECUTABLE]
+        cmd = [get_gradle_executable(context)]
         cmd += cmd_args
         cmd += ['test']
 
@@ -181,7 +184,7 @@ class AmentGradleBuildType(BuildType):
 
         cmd_args += context.ament_gradle_args
 
-        cmd = [GRADLE_EXECUTABLE]
+        cmd = [get_gradle_executable(context)]
         cmd += cmd_args
         cmd += ['assemble']
 
@@ -220,7 +223,7 @@ class AmentGradleBuildType(BuildType):
 
         cmd_args += context.ament_gradle_args
 
-        cmd = [GRADLE_EXECUTABLE]
+        cmd = [get_gradle_executable(context)]
         cmd += cmd_args
         cmd += ['clean']
 
