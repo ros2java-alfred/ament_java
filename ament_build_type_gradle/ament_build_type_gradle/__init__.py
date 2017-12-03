@@ -1,5 +1,6 @@
 # Copyright 2014 Open Source Robotics Foundation, Inc.
 # Copyright 2016 Esteve Fernandez <esteve@apache.org>
+# Copyright 2016-2017 Mickael Gaillard <mick.gaillard@gmail.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -46,7 +47,7 @@ def get_gradle_executable(context):
             gradle_path = os.path.join(gradle_home, 'bin', gradle_script)
             if os.path.isfile(gradle_path):
                 return gradle_path
-    
+
     return shutil.which(gradle_script)
 
 class AmentGradleBuildType(BuildType):
@@ -189,7 +190,7 @@ class AmentGradleBuildType(BuildType):
         cmd += ['assemble']
 
         yield BuildAction(cmd, cwd=context.source_space)
-        
+
         #Deploy libs dependencies
         filesDir = os.path.join(context.build_space, 'lib', 'java')
         if os.path.exists(filesDir):
@@ -199,10 +200,10 @@ class AmentGradleBuildType(BuildType):
                 os.path.join(
                     'lib', 'java',
                     os.path.basename(filename)))
-                
+
         #Deploy share files
         self.deploy_files(context, os.path.join('share', context.package_manifest.name, 'java'))
-                
+
         #Deploy scripts
         filesDir = os.path.join(context.build_space, 'bin')
         if os.path.exists(filesDir):
@@ -228,10 +229,10 @@ class AmentGradleBuildType(BuildType):
         cmd += ['clean']
 
         yield BuildAction(cmd, cwd=context.source_space)
-        
+
     def deploy_files(self, context, filesDir):
         dir = os.path.join(context.build_space, filesDir)
-        
+
         if os.path.exists(dir):
             for filename in os.listdir(dir):
                 if not os.path.isdir(os.path.join(dir, os.path.basename(filename))):
@@ -243,4 +244,4 @@ class AmentGradleBuildType(BuildType):
                     self.deploy_files(context, os.path.join(filesDir, os.path.basename(filename)))
 
     def get_environment_hook_template_path(self, name):
-	    return pkg_resources.resource_filename('ament_build_type_gradle', 'template/environment_hook/' + name)
+        return pkg_resources.resource_filename('ament_build_type_gradle', 'template/environment_hook/' + name)

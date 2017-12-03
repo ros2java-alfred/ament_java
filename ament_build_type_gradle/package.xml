@@ -1,9 +1,10 @@
 <?xml version="1.0"?>
-<package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>ament_build_type_gradle</name>
-  <version>0.0.0</version>
+  <version>0.0.2</version>
   <description>Gradle tool support for ament.</description>
-  <maintainer email="esteve@apache.org">Esteve Fernandez</maintainer>
+  <maintainer email="mick.gaillard@gmail.com">Mickael Gaillard</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_tools</buildtool_depend>
@@ -19,3 +20,4 @@
     <build_type>ament_python</build_type>
   </export>
 </package>
+
