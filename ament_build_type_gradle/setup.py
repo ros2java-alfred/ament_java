@@ -19,7 +19,7 @@ setup(
     ],
     description='Gradle tool support for ament.',
     license='Apache License, Version 2.0',
-    test_suite='test',
+    tests_require=['pytest'],
     entry_points={
         'ament.build_types': [
             'ament_gradle = ament_build_type_gradle:AmentGradleBuildType',
